@@ -1,6 +1,6 @@
 # LatentKit for Laravel
 
-Status: `0.1.0-alpha.1` source alpha
+Status: `0.1.0-alpha.1` published alpha
 
 Official Laravel integration for LatentKit's canonical, route-based `/v1` API.
 It provides an auto-discovered SDK binding, facade, connection-check command,
@@ -14,13 +14,15 @@ AI SDK.
 - Laravel AI SDK 0.9.1+
 - LatentKit PHP SDK 0.1.0-beta.3
 
-The source alpha is not published on Packagist yet. Development remains in the
-LatentKit monorepo and approved releases are split automatically into the
-public [Laravel package repository](https://github.com/amirehman/latentkit-laravel).
-Do not add either repository as a production Composer repository.
+The alpha is published as
+[`latentkit/laravel`](https://packagist.org/packages/latentkit/laravel).
+Development remains in the LatentKit monorepo and approved releases are split
+automatically into the public
+[Laravel package repository](https://github.com/amirehman/latentkit-laravel).
+Do not add either repository as a custom Composer repository.
 
-Because this alpha depends on the prerelease PHP SDK, its first Packagist
-install will explicitly request both prereleases:
+Because this alpha depends on the prerelease PHP SDK, install both prereleases
+explicitly:
 
 ```bash
 composer require \
@@ -28,9 +30,8 @@ composer require \
   latentkit/laravel:0.1.0-alpha.1
 ```
 
-This command becomes usable only after `0.1.0-alpha.1` is visible on
-Packagist. A stable Laravel release will use the normal single-package install
-command after the PHP SDK is stable.
+A stable Laravel release will use the normal single-package install command
+after the PHP SDK is stable.
 
 ## Configure
 
