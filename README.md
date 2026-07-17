@@ -14,10 +14,23 @@ AI SDK.
 - Laravel AI SDK 0.9.1+
 - LatentKit PHP SDK 0.1.0-beta.3
 
-The source alpha is not published on Packagist. Do not add the monorepo as a
-production Composer repository. A public install command will be documented
-after the package repository, release automation, compatibility matrix, and
-design-partner gates pass.
+The source alpha is not published on Packagist yet. Development remains in the
+LatentKit monorepo and approved releases are split automatically into the
+public [Laravel package repository](https://github.com/amirehman/latentkit-laravel).
+Do not add either repository as a production Composer repository.
+
+Because this alpha depends on the prerelease PHP SDK, its first Packagist
+install will explicitly request both prereleases:
+
+```bash
+composer require \
+  latentkit/latentkit-php:0.1.0-beta.3 \
+  latentkit/laravel:0.1.0-alpha.1
+```
+
+This command becomes usable only after `0.1.0-alpha.1` is visible on
+Packagist. A stable Laravel release will use the normal single-package install
+command after the PHP SDK is stable.
 
 ## Configure
 
@@ -162,4 +175,6 @@ Use the LatentKit request ID when support needs to correlate a failed request.
 composer validate --strict --no-check-publish
 composer check
 composer audit
+scripts/smoke-clean-app.sh '^12.0'
+scripts/smoke-clean-app.sh '^13.0'
 ```

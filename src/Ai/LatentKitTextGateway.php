@@ -62,8 +62,8 @@ final class LatentKitTextGateway implements StepTextGateway
                 ->chat
                 ->create(
                     messages: $this->mapMessages($instructions, $messages),
-                    maxTokens: max(1, $options?->maxTokens ?? 1000),
-                    temperature: $options?->temperature ?? 0.7,
+                    maxTokens: max(1, $options->maxTokens ?? 1000),
+                    temperature: $options->temperature ?? 0.7,
                     responseProfile: $this->responseProfile,
                     extraBody: $extraBody,
                 );
@@ -116,10 +116,6 @@ final class LatentKitTextGateway implements StepTextGateway
         ?int $timeout,
         StepContext $stepContext,
     ): Generator {
-        if (false) {
-            yield;
-        }
-
         throw new UnsupportedFeatureException(
             'LatentKit streaming is not available in this Laravel integration release.',
         );
@@ -152,7 +148,7 @@ final class LatentKitTextGateway implements StepTextGateway
     }
 
     /**
-     * @param  Message[]  $messages
+     * @param  array<array-key, mixed>  $messages
      * @return list<array{role: string, content: string}>
      */
     private function mapMessages(?string $instructions, array $messages): array

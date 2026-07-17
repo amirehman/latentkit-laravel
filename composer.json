@@ -12,7 +12,8 @@
   "homepage": "https://docs.latentkit.com/integrations/laravel",
   "support": {
     "docs": "https://docs.latentkit.com/integrations/laravel",
-    "source": "https://github.com/amirehman/LatentKit-AI-Gateway"
+    "issues": "https://github.com/amirehman/latentkit-laravel/issues",
+    "source": "https://github.com/amirehman/latentkit-laravel"
   },
   "keywords": [
     "ai",
@@ -29,6 +30,7 @@
     "latentkit/latentkit-php": "^0.1.0-beta.3@beta"
   },
   "require-dev": {
+    "larastan/larastan": "^3.9",
     "laravel/pint": "^1.26",
     "orchestra/testbench": "^10.6 || ^11.0",
     "phpunit/phpunit": "^11.5 || ^12.0"
@@ -44,9 +46,11 @@
     }
   },
   "scripts": {
+    "analyse": "phpstan analyse --no-progress --debug",
     "lint": "pint --test",
     "test": "phpunit",
     "check": [
+      "@analyse",
       "@lint",
       "@test"
     ]

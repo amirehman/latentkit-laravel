@@ -21,6 +21,7 @@ final class LatentKitProvider extends Provider implements TextProvider
 
     public const ROUTE_MODEL_ID = 'latentkit-route';
 
+    /** @param array<string, mixed> $config */
     public function __construct(
         private readonly ClientFactory $clientFactory,
         protected array $config,

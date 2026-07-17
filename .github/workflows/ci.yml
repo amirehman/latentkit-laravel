@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Package ${{ matrix.dependencies }} / PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.3'
+            dependencies: lowest
+          - php: '8.4'
+            dependencies: locked
+          - php: '8.5'
+            dependencies: locked
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl
+          tools: composer:v2
+          coverage: none
+
+      - name: Validate package
+        run: composer validate --strict
+
+      - name: Install locked dependencies
+        if: matrix.dependencies == 'locked'
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Resolve the Laravel 12 lower bound
+        if: matrix.dependencies == 'lowest'
+        run: composer update --no-interaction --prefer-dist --prefer-lowest --prefer-stable --no-progress
+
+      - name: Check
+        run: composer check
+
+      - name: Audit dependencies
+        run: composer audit
+
+  clean-application:
+    name: Clean Laravel ${{ matrix.laravel }} / PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.3'
+            laravel: '^12.0'
+          - php: '8.5'
+            laravel: '^13.0'
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl, sqlite3
+          tools: composer:v2
+          coverage: none
+
+      - name: Run clean application smoke
+        run: scripts/smoke-clean-app.sh '${{ matrix.laravel }}'
