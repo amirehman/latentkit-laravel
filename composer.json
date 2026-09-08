@@ -30,7 +30,7 @@
     "latentkit/latentkit-php": "^0.1.0-beta.3@beta"
   },
   "conflict": {
-    "league/commonmark": "<2.9.0"
+    "league/commonmark": "<2.10.0"
   },
   "require-dev": {
     "larastan/larastan": "^3.9",
