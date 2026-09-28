@@ -38,7 +38,7 @@ after the PHP SDK is stable.
 Set an app-scoped runtime key in the server environment:
 
 ```dotenv
-LATENTKIT_API_KEY=lk_...
+LATENTKIT_API_KEY=lk-...
 ```
 
 Optional server-owned settings are `LATENTKIT_BASE_URL`, `LATENTKIT_TIMEOUT`,
