@@ -11,7 +11,7 @@ AI SDK.
 
 - PHP 8.3+
 - Laravel 12 or 13
-- Laravel AI SDK 0.9.1+
+- Laravel AI SDK 1.0+ (the published `0.1.0-alpha.1` supports 0.9.x only)
 - LatentKit PHP SDK 0.1.0-beta.3
 
 The alpha is published as

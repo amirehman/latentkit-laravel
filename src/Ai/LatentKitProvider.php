@@ -21,12 +21,18 @@ final class LatentKitProvider extends Provider implements TextProvider
 
     public const ROUTE_MODEL_ID = 'latentkit-route';
 
-    /** @param array<string, mixed> $config */
+    /**
+     * The client factory and response profile stay protected and writable:
+     * Laravel AI restores a provider from a queue payload by resolving it
+     * again by name and copying the properties its base class can reach.
+     *
+     * @param  array<string, mixed>  $config
+     */
     public function __construct(
-        private readonly ClientFactory $clientFactory,
+        protected ClientFactory $clientFactory,
         protected array $config,
         protected Dispatcher $events,
-        private readonly ?string $responseProfile = null,
+        protected ?string $responseProfile = null,
     ) {}
 
     public function providerCredentials(): array

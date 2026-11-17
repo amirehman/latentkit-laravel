@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace LatentKit\Laravel\Tests;
 
 use Illuminate\Support\Facades\Facade;
+use Laravel\Ai\AiManager;
 use Laravel\Ai\AnonymousAgent;
 use Laravel\Ai\Jobs\InvokeAgent;
+use Laravel\Ai\Providers\Provider;
 use LatentKit\Laravel\Ai\LatentKitProvider;
+use LatentKit\Laravel\Ai\LatentKitTextGateway;
 use LatentKit\Laravel\ClientFactory;
 use LatentKit\Laravel\Exceptions\LatentKitAiException;
 use LatentKit\Laravel\Exceptions\UnsupportedFeatureException;
@@ -56,8 +59,8 @@ final class LatentKitIntegrationTest extends TestCase
         );
 
         self::assertSame('Laravel response', $response->text);
-        self::assertSame(11, $response->usage->promptTokens);
-        self::assertSame(7, $response->usage->completionTokens);
+        self::assertSame(11, $response->usage->inputTokens);
+        self::assertSame(7, $response->usage->outputTokens);
         self::assertSame('anthropic', $response->meta->provider);
         self::assertSame('claude-haiku-4-5', $response->meta->model);
 
@@ -175,6 +178,33 @@ final class LatentKitIntegrationTest extends TestCase
         $restored = unserialize($serialized, ['allowed_classes' => true]);
         $restored->handle();
 
+        self::assertCount(1, $this->transport->requests);
+        self::assertSame('https://example.test/v1/chat', $this->transport->requests[0]['url']);
+    }
+
+    public function test_provider_instance_survives_queue_serialization_without_the_client_or_credential(): void
+    {
+        if (! method_exists(Provider::class, '__serialize')) {
+            self::markTestSkipped('This Laravel AI release does not serialize provider instances.');
+        }
+
+        $provider = $this->app->make(AiManager::class)->textProvider('latentkit');
+
+        $serialized = serialize($provider);
+        self::assertStringNotContainsString('test-key', $serialized);
+        self::assertStringNotContainsString(ClientFactory::class, $serialized);
+
+        $this->transport->push($this->jsonResponse(['content' => 'Restored response']));
+
+        /** @var LatentKitProvider $restored */
+        $restored = unserialize($serialized, ['allowed_classes' => true]);
+        $response = (new AnonymousAgent('Queued instruction.', [], []))->prompt(
+            'Queued prompt.',
+            provider: [$restored],
+        );
+
+        self::assertSame('Restored response', $response->text);
+        self::assertInstanceOf(LatentKitTextGateway::class, $restored->textGateway());
         self::assertCount(1, $this->transport->requests);
         self::assertSame('https://example.test/v1/chat', $this->transport->requests[0]['url']);
     }

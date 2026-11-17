@@ -18,7 +18,7 @@ use Laravel\Ai\Messages\ToolResultMessage;
 use Laravel\Ai\Messages\UserMessage;
 use Laravel\Ai\Responses\Data\FinishReason;
 use Laravel\Ai\Responses\Data\Meta;
-use Laravel\Ai\Responses\Data\Usage;
+use Laravel\Ai\Responses\Data\TextUsage;
 use Laravel\Ai\Streaming\Events\StreamEvent;
 use LatentKit\Exceptions\ApiException;
 use LatentKit\Exceptions\LatentKitException;
@@ -87,9 +87,9 @@ final class LatentKitTextGateway implements StepTextGateway
             text: $content,
             toolCalls: [],
             finishReason: $this->finishReason($response['finish_reason'] ?? null),
-            usage: new Usage(
-                promptTokens: $this->integer($usage['prompt_tokens'] ?? $usage['input_tokens'] ?? null),
-                completionTokens: $this->integer($usage['completion_tokens'] ?? $usage['output_tokens'] ?? null),
+            usage: new TextUsage(
+                inputTokens: $this->integer($usage['prompt_tokens'] ?? $usage['input_tokens'] ?? null),
+                outputTokens: $this->integer($usage['completion_tokens'] ?? $usage['output_tokens'] ?? null),
             ),
             meta: new Meta(
                 provider: $this->optionalString($response['provider'] ?? null) ?? 'latentkit',
