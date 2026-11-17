@@ -7,6 +7,7 @@ namespace LatentKit\Laravel\Console;
 use Illuminate\Console\Command;
 use LatentKit\Exceptions\ApiException;
 use LatentKit\Laravel\ClientFactory;
+use LatentKit\Laravel\Exceptions\LatentKitAiException;
 use Throwable;
 
 final class CheckConnectionCommand extends Command
@@ -20,9 +21,11 @@ final class CheckConnectionCommand extends Command
         try {
             $context = $clientFactory->make()->me->retrieveContext();
         } catch (ApiException $exception) {
+            $apiCode = LatentKitAiException::safeErrorCode($exception->apiCode);
             $this->error(sprintf(
-                'LatentKit rejected the connection check with HTTP %d.%s',
+                'LatentKit rejected the connection check with HTTP %d%s.%s',
                 $exception->statusCode,
+                $apiCode !== null ? ' ('.$apiCode.')' : '',
                 $exception->requestId !== null ? ' Request ID: '.$exception->requestId : '',
             ));
 

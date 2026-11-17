@@ -164,8 +164,9 @@ Neither fake contacts LatentKit.
 
 Direct SDK calls expose normalized `ApiException` status, code, and request ID.
 The Laravel AI driver wraps API failures in `LatentKitAiException`, whose public
-message contains only the HTTP status and request ID. It does not include the
-provider response body.
+message contains only the HTTP status, the LatentKit error code, and the request
+ID. The same values are available as `statusCode`, `apiCode`, and `requestId`.
+It does not include the provider response body.
 
 Never log API keys, prompts, generated content, or provider response bodies.
 Use the LatentKit request ID when support needs to correlate a failed request.

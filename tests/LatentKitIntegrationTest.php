@@ -49,7 +49,9 @@ final class LatentKitIntegrationTest extends TestCase
             'provider' => 'anthropic',
             'model' => 'claude-haiku-4-5',
             'finish_reason' => 'stop',
-            'usage' => ['prompt_tokens' => 11, 'completion_tokens' => 7],
+            'usage' => ['input_tokens' => 11, 'output_tokens' => 7, 'total_tokens' => 18],
+            'cached_input_tokens' => 8,
+            'reasoning_tokens' => 3,
             'request_id' => 'req_success',
         ]));
 
@@ -61,6 +63,8 @@ final class LatentKitIntegrationTest extends TestCase
         self::assertSame('Laravel response', $response->text);
         self::assertSame(11, $response->usage->inputTokens);
         self::assertSame(7, $response->usage->outputTokens);
+        self::assertSame(8, $response->usage->cacheReadInputTokens);
+        self::assertSame(3, $response->usage->reasoningTokens);
         self::assertSame('anthropic', $response->meta->provider);
         self::assertSame('claude-haiku-4-5', $response->meta->model);
 
@@ -106,9 +110,64 @@ final class LatentKitIntegrationTest extends TestCase
         } catch (LatentKitAiException $exception) {
             self::assertSame(429, $exception->statusCode);
             self::assertSame('req_safe_123', $exception->requestId);
+            self::assertNull($exception->apiCode);
             self::assertStringContainsString('Request ID: req_safe_123', $exception->getMessage());
             self::assertStringNotContainsString('provider response body', $exception->getMessage());
         }
+    }
+
+    public function test_provider_errors_name_the_latentkit_code_but_never_free_text(): void
+    {
+        $this->transport->push($this->jsonResponse([
+            'error' => [
+                'code' => 'KEY_BUDGET_EXHAUSTED',
+                'category' => 'billing',
+                'message' => 'provider response body must stay hidden',
+                'request_id' => 'req_budget',
+                'retryable' => false,
+            ],
+        ], 402));
+        $this->transport->push($this->jsonResponse([
+            'error' => [
+                'code' => 'Provider said: invalid key sk-live-123',
+                'message' => 'provider response body must stay hidden',
+            ],
+        ], 502));
+
+        try {
+            (new AnonymousAgent('', [], []))->prompt('Hello', provider: 'latentkit');
+            self::fail('Expected a safe LatentKit AI exception.');
+        } catch (LatentKitAiException $exception) {
+            self::assertSame('KEY_BUDGET_EXHAUSTED', $exception->apiCode);
+            self::assertSame(
+                'LatentKit rejected the Laravel AI request with HTTP 402 (KEY_BUDGET_EXHAUSTED). Request ID: req_budget.',
+                $exception->getMessage(),
+            );
+        }
+
+        try {
+            (new AnonymousAgent('', [], []))->prompt('Hello', provider: 'latentkit');
+            self::fail('Expected a safe LatentKit AI exception.');
+        } catch (LatentKitAiException $exception) {
+            self::assertNull($exception->apiCode);
+            self::assertSame('LatentKit rejected the Laravel AI request with HTTP 502.', $exception->getMessage());
+        }
+    }
+
+    public function test_usage_falls_back_to_legacy_fields_and_keeps_unreported_counts_null(): void
+    {
+        $this->transport->push($this->jsonResponse([
+            'content' => 'Legacy response',
+            'prompt_tokens' => 5,
+            'completion_tokens' => 2,
+        ]));
+
+        $response = (new AnonymousAgent('', [], []))->prompt('Hello', provider: 'latentkit');
+
+        self::assertSame(5, $response->usage->inputTokens);
+        self::assertSame(2, $response->usage->outputTokens);
+        self::assertNull($response->usage->cacheReadInputTokens);
+        self::assertNull($response->usage->reasoningTokens);
     }
 
     public function test_streaming_fails_explicitly_without_a_network_request(): void
@@ -151,12 +210,14 @@ final class LatentKitIntegrationTest extends TestCase
             ['content' => 'Fake response'],
         ]);
 
-        $response = LatentKitFacade::client()->chat->create([
-            ['role' => 'user', 'content' => 'Queue-safe request'],
-        ]);
+        $response = LatentKitFacade::client()->chat->create(
+            messages: [['role' => 'user', 'content' => 'Queue-safe request']],
+            purpose: 'summaries',
+        );
 
         self::assertSame('Fake response', $response['content']);
-        $fake->assertChatSent(fn (array $request): bool => $request['messages'][0]['content'] === 'Queue-safe request');
+        $fake->assertChatSent(fn (array $request): bool => $request['messages'][0]['content'] === 'Queue-safe request'
+            && $request['purpose'] === 'summaries');
         self::assertSame([], $this->transport->requests);
     }
 

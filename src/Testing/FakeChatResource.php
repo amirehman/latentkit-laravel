@@ -23,8 +23,9 @@ final class FakeChatResource
         float $temperature = 0.7,
         ?string $responseProfile = null,
         array $extraBody = [],
+        ?string $purpose = null,
     ): array {
-        $this->requests[] = compact('messages', 'maxTokens', 'temperature', 'responseProfile', 'extraBody');
+        $this->requests[] = compact('messages', 'maxTokens', 'temperature', 'responseProfile', 'extraBody', 'purpose');
 
         return array_shift($this->responses) ?? ['content' => 'LatentKit fake response'];
     }

@@ -10,6 +10,15 @@
 - Keep the provider usable after Laravel AI restores it from a queue payload.
 - Refresh the locked development dependencies, including Larastan 3.15,
   Pint 1.32, and Testbench 11.3.
+- `LatentKitAiException` exposes `apiCode` and names it in the message, and
+  `latentkit:check` prints it, so `KEY_DISABLED`, `KEY_BUDGET_EXHAUSTED`,
+  `RATE_LIMITED`, and similar failures are distinguishable without the response
+  body. Error message text is still withheld, and a value that does not look
+  like an error code is not shown.
+- Report cached input tokens and reasoning tokens on Laravel AI usage, leaving
+  them null when LatentKit did not report them, and fall back to the top-level
+  token counts when a response has no `usage` object.
+- The testing fake's `chat->create()` accepts the `purpose` argument.
 
 ## 0.1.0-alpha.1 - 2026-07-15
 

@@ -88,8 +88,18 @@ final class LatentKitTextGateway implements StepTextGateway
             toolCalls: [],
             finishReason: $this->finishReason($response['finish_reason'] ?? null),
             usage: new TextUsage(
-                inputTokens: $this->integer($usage['prompt_tokens'] ?? $usage['input_tokens'] ?? null),
-                outputTokens: $this->integer($usage['completion_tokens'] ?? $usage['output_tokens'] ?? null),
+                inputTokens: $this->integer(
+                    $usage['input_tokens'] ?? $usage['prompt_tokens'] ?? $response['prompt_tokens'] ?? null,
+                ),
+                outputTokens: $this->integer(
+                    $usage['output_tokens'] ?? $usage['completion_tokens'] ?? $response['completion_tokens'] ?? null,
+                ),
+                cacheReadInputTokens: $this->optionalInteger(
+                    $usage['cached_input_tokens'] ?? $response['cached_input_tokens'] ?? null,
+                ),
+                reasoningTokens: $this->optionalInteger(
+                    $usage['reasoning_tokens'] ?? $response['reasoning_tokens'] ?? null,
+                ),
             ),
             meta: new Meta(
                 provider: $this->optionalString($response['provider'] ?? null) ?? 'latentkit',
@@ -200,6 +210,12 @@ final class LatentKitTextGateway implements StepTextGateway
     private function integer(mixed $value): int
     {
         return is_numeric($value) ? max(0, (int) $value) : 0;
+    }
+
+    /** Null means LatentKit did not report the count, which is different from zero. */
+    private function optionalInteger(mixed $value): ?int
+    {
+        return is_numeric($value) ? max(0, (int) $value) : null;
     }
 
     private function optionalString(mixed $value): ?string
