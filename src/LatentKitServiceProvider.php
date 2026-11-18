@@ -15,7 +15,7 @@ final class LatentKitServiceProvider extends ServiceProvider
 {
     public const TOOL_SLUG = 'latentkit-laravel';
 
-    public const VERSION = '0.1.0-alpha.1';
+    public const VERSION = '0.1.0-alpha.2';
 
     public function register(): void
     {

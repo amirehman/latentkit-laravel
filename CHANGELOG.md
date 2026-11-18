@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.0-alpha.2 - 2026-11-18
 
 - Require Laravel AI SDK 1.x (`laravel/ai` `^1.0`), verified on 1.0.0 and
   1.4.0. Laravel AI 0.9.x is no longer supported by the source;
